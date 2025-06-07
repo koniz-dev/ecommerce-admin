@@ -1,7 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
@@ -25,22 +24,31 @@ const badgeVariants = cva(
   }
 )
 
-function Badge({
-  className,
-  variant,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : "span"
+// Omit the built-in 'ref' so that people can’t pass a string ref by mistake:
+type BaseSpanProps = Omit<React.ComponentProps<"span">, "ref">
 
-  return (
-    <Comp
-      data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
-      {...props}
-    />
-  )
-}
+export type BadgeProps = BaseSpanProps &
+  VariantProps<typeof badgeVariants> & {
+    /** Render as the child slot instead of a span */
+    asChild?: boolean
+  }
 
-export { Badge, badgeVariants }
+/**
+ * A polymorphic Badge that can render as a <span> or as any childless component via Radix’s <Slot>.
+ * We forward a ref of type HTMLElement (will point to the actual rendered DOM node).
+ */
+export const Badge = React.forwardRef<HTMLElement, BadgeProps>(
+  ({ className, variant, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "span"
+    return (
+      <Comp
+        ref={ref}
+        data-slot="badge"
+        className={cn(badgeVariants({ variant }), className)}
+        {...props}
+      />
+    )
+  }
+)
+
+Badge.displayName = "Badge"

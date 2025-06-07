@@ -11,9 +11,7 @@ import { getStockCount } from '@/actions/get-stock-count';
 import { formatter } from '@/lib/utils';
 
 interface DashboardPageProps {
-  params: {
-    storeId: string;
-  };
+  params: Promise<{ storeId: string }>;
 }
 
 const DashboardPage: React.FC<DashboardPageProps> = async props => {

@@ -1,9 +1,12 @@
 import { Copy, Server } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { ComponentProps } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge, BadgeProps } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+
+type BadgeProps = ComponentProps<typeof Badge>;
 
 interface ApiAlertProps {
   title: string;
