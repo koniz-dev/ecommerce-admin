@@ -2,7 +2,8 @@ import prismadb from '@/lib/prismadb';
 
 import { SizeForm } from './components/size-form';
 
-const SizePage = async ({ params }: { params: { sizeId: string } }) => {
+const SizePage = async (props: { params: Promise<{ sizeId: string }> }) => {
+  const params = await props.params;
   let size = null;
 
   if (params.sizeId !== 'new') {

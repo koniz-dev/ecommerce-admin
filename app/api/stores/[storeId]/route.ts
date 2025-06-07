@@ -3,10 +3,8 @@ import { auth } from '@clerk/nextjs/server';
 
 import prismadb from '@/lib/prismadb';
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { storeId: string } },
-) {
+export async function PATCH(req: Request, props: { params: Promise<{ storeId: string }> }) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     const body = await req.json();
@@ -42,10 +40,8 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { storeId: string } },
-) {
+export async function DELETE(req: Request, props: { params: Promise<{ storeId: string }> }) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
 

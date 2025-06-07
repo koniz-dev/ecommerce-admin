@@ -2,11 +2,12 @@ import prismadb from '@/lib/prismadb';
 
 import { BillboardForm } from './components/billboard-form';
 
-const BillboardPage = async ({
-  params,
-}: {
-  params: { billboardId: string };
-}) => {
+const BillboardPage = async (
+  props: {
+    params: Promise<{ billboardId: string }>;
+  }
+) => {
+  const params = await props.params;
   let billboard = null;
 
   if (params.billboardId !== 'new') {

@@ -3,10 +3,8 @@ import { NextResponse } from 'next/server';
 import prismadb from '@/lib/prismadb';
 import { auth } from '@clerk/nextjs/server';
 
-export async function GET(
-  req: Request,
-  { params }: { params: { sizeId: string } },
-) {
+export async function GET(req: Request, props: { params: Promise<{ sizeId: string }> }) {
+  const params = await props.params;
   try {
     if (!params.sizeId) {
       return new NextResponse('Size id is required', { status: 400 });
@@ -27,8 +25,9 @@ export async function GET(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { sizeId: string; storeId: string } },
+  props: { params: Promise<{ sizeId: string; storeId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
 
@@ -66,8 +65,9 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { sizeId: string; storeId: string } },
+  props: { params: Promise<{ sizeId: string; storeId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
 

@@ -5,7 +5,8 @@ import prismadb from '@/lib/prismadb';
 
 import { SettingsForm } from './components/settings-form';
 
-const SettingsPage = async ({ params }: { params: { storeId: string } }) => {
+const SettingsPage = async (props: { params: Promise<{ storeId: string }> }) => {
+  const params = await props.params;
   const { userId } = await auth();
 
   if (!userId) {

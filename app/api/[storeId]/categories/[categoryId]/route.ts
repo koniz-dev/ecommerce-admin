@@ -3,10 +3,8 @@ import { auth } from '@clerk/nextjs/server';
 
 import prismadb from '@/lib/prismadb';
 
-export async function GET(
-  req: Request,
-  { params }: { params: { categoryId: string } },
-) {
+export async function GET(req: Request, props: { params: Promise<{ categoryId: string }> }) {
+  const params = await props.params;
   try {
     if (!params.categoryId) {
       return new NextResponse('Category id is required', { status: 400 });
@@ -30,8 +28,9 @@ export async function GET(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { categoryId: string; storeId: string } },
+  props: { params: Promise<{ categoryId: string; storeId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
 
@@ -69,8 +68,9 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { categoryId: string; storeId: string } },
+  props: { params: Promise<{ categoryId: string; storeId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
 
