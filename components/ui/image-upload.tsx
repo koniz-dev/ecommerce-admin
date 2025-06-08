@@ -26,7 +26,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     setIsMounted(true);
   }, []);
 
-  const onUpload = (result: any) => {
+  useEffect(() => {
+    console.log("🖼️ Value changed:", value);
+  }, [value]);
+
+  const onSuccess = (result: any) => {
+    console.log("🚀 ~ onSuccess ~ result:", result)
     onChange(result.info.secure_url);
   };
 
@@ -57,18 +62,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         ))}
       </div>
 
-      <CldUploadWidget onUpload={onUpload} uploadPreset="btadrt9x">
+      <CldUploadWidget onSuccess={onSuccess} uploadPreset="btadrt9x">
         {({ open }) => {
-          const onClick = () => {
-            open();
-          };
 
           return (
             <Button
               type="button"
               disabled={disabled}
               variant="secondary"
-              onClick={onClick}
+              onClick={() => open()}
             >
               <ImagePlus className="h-4 w-4 mr-2" />
               Upload an Image

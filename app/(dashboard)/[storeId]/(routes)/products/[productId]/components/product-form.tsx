@@ -110,7 +110,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       router.refresh();
       router.push(`/${params.storeId}/products`);
       toast.success(toastMessage);
-    } catch (error: any) {
+    } catch {
       toast.error('Something went wrong.');
     } finally {
       setLoading(false);
@@ -124,7 +124,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       router.refresh();
       router.push(`/${params.storeId}/products`);
       toast.success('Product deleted.');
-    } catch (error: any) {
+    } catch {
       toast.error('Something went wrong.');
     } finally {
       setLoading(false);
@@ -172,9 +172,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <ImageUpload
                     value={field.value.map((image) => image.url)}
                     disabled={loading}
-                    onChange={(url) =>
-                      field.onChange([...field.value, { url }])
-                    }
+                    onChange={(url) => {
+                      const newValue = [...(form.getValues("images") || []), { url }];
+                      field.onChange(newValue);
+                    }}
                     onRemove={(url) =>
                       field.onChange([
                         ...field.value.filter((current) => current.url !== url),
@@ -332,7 +333,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <FormControl>
                     <Checkbox
                       checked={field.value}
-                      // @ts-ignore
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -354,7 +354,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <FormControl>
                     <Checkbox
                       checked={field.value}
-                      // @ts-ignore
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
