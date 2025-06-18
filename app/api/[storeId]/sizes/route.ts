@@ -3,25 +3,22 @@ import { auth } from '@clerk/nextjs/server';
 
 import prismadb from '@/lib/prismadb';
 
-export async function POST(req: Request, props: { params: Promise<{ storeId: string }> }) {
+export async function POST(
+  req: Request,
+  props: { params: Promise<{ storeId: string }> },
+) {
   const params = await props.params;
   try {
     const { userId } = await auth();
 
     const body = await req.json();
 
-    const { name, value } = body;
-
     if (!userId) {
       return new NextResponse('Unauthenticated', { status: 403 });
     }
 
-    if (!name) {
-      return new NextResponse('Name is required', { status: 400 });
-    }
-
-    if (!value) {
-      return new NextResponse('Value is required', { status: 400 });
+    if (!body.label) {
+      return new NextResponse('Label is required', { status: 400 });
     }
 
     if (!params.storeId) {
@@ -41,8 +38,8 @@ export async function POST(req: Request, props: { params: Promise<{ storeId: str
 
     const size = await prismadb.size.create({
       data: {
-        name,
-        value,
+        label: body.label,
+        guideImageUrl: body?.guideImageUrl,
         storeId: params.storeId,
       },
     });
@@ -54,7 +51,10 @@ export async function POST(req: Request, props: { params: Promise<{ storeId: str
   }
 }
 
-export async function GET(req: Request, props: { params: Promise<{ storeId: string }> }) {
+export async function GET(
+  req: Request,
+  props: { params: Promise<{ storeId: string }> },
+) {
   const params = await props.params;
   try {
     if (!params.storeId) {

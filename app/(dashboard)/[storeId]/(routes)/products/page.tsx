@@ -1,46 +1,36 @@
 import { format } from 'date-fns';
+import { enUS } from 'date-fns/locale';
 
 import prismadb from '@/lib/prismadb';
-import { formatter } from '@/lib/utils';
 
 import { ProductsClient } from './components/client';
 import { ProductColumn } from './components/columns';
 
-const ProductsPage = async (props: { params: Promise<{ storeId: string }> }) => {
-  const params = await props.params;
+interface PageProps {
+  params: Promise<{ storeId: string }>;
+}
+
+export default async function ProductsPage({ params }: PageProps) {
+  const { storeId } = await params;
+
   const products = await prismadb.product.findMany({
-    where: {
-      storeId: params.storeId,
-    },
-    include: {
-      category: true,
-      size: true,
-      color: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    where: { storeId },
+    include: { category: true },
+    orderBy: { createdAt: 'desc' },
   });
 
-  const formattedProducts: ProductColumn[] = products.map((item) => ({
-    id: item.id,
-    name: item.name,
-    isFeatured: item.isFeatured,
-    isArchived: item.isArchived,
-    price: formatter.format(Number(item.price)),
-    category: item.category.name,
-    size: item.size.name,
-    color: item.color.value,
-    createdAt: format(item.createdAt, 'MMMM do, yyyy'),
+  const data: ProductColumn[] = products.map((p) => ({
+    id: p.id,
+    name: p.name,
+    status: p.status,
+    featured: p.isFeatured,
+    category: p.category.name,
+    created: format(p.createdAt, 'MMMM do, yyyy', { locale: enUS }),
   }));
 
   return (
-    <div className="flex-col">
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <ProductsClient data={formattedProducts} />
-      </div>
+    <div className="flex flex-col p-8 space-y-4">
+      <ProductsClient data={data} />
     </div>
   );
-};
-
-export default ProductsPage;
+}

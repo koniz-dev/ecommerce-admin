@@ -34,10 +34,12 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       await axios.delete(`/api/${params.storeId}/categories/${data.id}`);
       toast.success('Category deleted.');
       router.refresh();
-    } catch {
-      toast.error(
-        'Make sure you removed all products using this category first.',
-      );
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data?.message || 'Failed to delete category.');
+      } else {
+        toast.error('Network error. Please try again.');
+      }
     } finally {
       setOpen(false);
       setLoading(false);

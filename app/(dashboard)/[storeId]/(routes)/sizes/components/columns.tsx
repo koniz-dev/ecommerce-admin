@@ -3,26 +3,39 @@
 import { ColumnDef } from '@tanstack/react-table';
 
 import { CellAction } from './cell-action';
+import Image from 'next/image';
 
 export type SizeColumn = {
   id: string;
-  name: string;
-  value: string;
+  label: string;
+  guideImageUrl?: string;
   createdAt: string;
 };
 
 export const columns: ColumnDef<SizeColumn>[] = [
   {
-    accessorKey: 'name',
-    header: 'Name',
+    accessorKey: 'label',
+    header: 'Size',
   },
   {
-    accessorKey: 'value',
-    header: 'Value',
+    accessorKey: 'guideImageUrl',
+    header: 'Guide',
+    cell: ({ row }) =>
+      row.original.guideImageUrl ? (
+        <Image
+          src={row.original.guideImageUrl}
+          alt="Guide"
+          width={48}
+          height={48}
+          className="object-cover rounded"
+        />
+      ) : (
+        <span className="text-gray-400 italic">No image</span>
+      ),
   },
   {
     accessorKey: 'createdAt',
-    header: 'Date',
+    header: 'Created',
   },
   {
     id: 'actions',

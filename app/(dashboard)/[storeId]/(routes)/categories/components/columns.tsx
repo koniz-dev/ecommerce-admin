@@ -17,9 +17,8 @@ export const columns: ColumnDef<CategoryColumn>[] = [
     header: 'Name',
   },
   {
-    accessorKey: 'billboard',
+    accessorKey: 'billboardLabel',
     header: 'Billboard',
-    cell: ({ row }) => row.original.billboardLabel,
   },
   {
     accessorKey: 'createdAt',

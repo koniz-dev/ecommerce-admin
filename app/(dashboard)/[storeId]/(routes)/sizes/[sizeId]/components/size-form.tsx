@@ -25,8 +25,11 @@ import { Heading } from '@/components/ui/heading';
 import { AlertModal } from '@/components/modals/alert-modal';
 
 const formSchema = z.object({
-  name: z.string().min(1),
-  value: z.string().min(1),
+  label: z.string().min(1, { message: 'Label is required' }),
+  guideImageUrl: z
+    .string()
+    .url({ message: 'Must be a valid URL' })
+    .or(z.literal('')),
 });
 
 type SizeFormValues = z.infer<typeof formSchema>;
@@ -49,8 +52,9 @@ export const SizeForm: React.FC<SizeFormProps> = ({ initialData }) => {
 
   const form = useForm<SizeFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData || {
-      name: '',
+    defaultValues: {
+      label: initialData?.label ?? '',
+      guideImageUrl: initialData?.guideImageUrl ?? '',
     },
   });
 
@@ -123,14 +127,14 @@ export const SizeForm: React.FC<SizeFormProps> = ({ initialData }) => {
           <div className="md:grid md:grid-cols-3 gap-8">
             <FormField
               control={form.control}
-              name="name"
+              name="label"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Label</FormLabel>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder="Size name"
+                      placeholder="For example: S, M, L, XL, or 36, 38, 40"
                       {...field}
                     />
                   </FormControl>
@@ -141,14 +145,14 @@ export const SizeForm: React.FC<SizeFormProps> = ({ initialData }) => {
 
             <FormField
               control={form.control}
-              name="value"
+              name="guideImageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Value</FormLabel>
+                  <FormLabel>Guide</FormLabel>
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder="Size value"
+                      placeholder="Paste the link of the image with size instructions (optional)"
                       {...field}
                     />
                   </FormControl>

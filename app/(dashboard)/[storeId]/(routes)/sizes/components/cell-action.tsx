@@ -34,8 +34,12 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
       await axios.delete(`/api/${params.storeId}/sizes/${data.id}`);
       toast.success('Size deleted.');
       router.refresh();
-    } catch {
-      toast.error('Make sure you removed all products using this size first.');
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data?.message || 'Failed to delete size.');
+      } else {
+        toast.error('Network error. Please try again.');
+      }
     } finally {
       setOpen(false);
       setLoading(false);

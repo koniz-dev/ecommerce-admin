@@ -2,6 +2,7 @@
 
 import * as z from 'zod';
 import axios from 'axios';
+import Image from 'next/image';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -30,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const formSchema = z.object({
   name: z.string().min(2),
@@ -174,7 +176,20 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                     <SelectContent>
                       {billboards.map((billboard) => (
                         <SelectItem key={billboard.id} value={billboard.id}>
-                          {billboard.label}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className='cursor-pointer'>{billboard.label}</span>
+                            </TooltipTrigger>
+                            <TooltipContent side='right' sideOffset={40}>
+                              <Image
+                                src={billboard.imageUrl}
+                                alt={`${billboard.label} Preview Image`}
+                                width={200}
+                                height={200}
+                                className="object-cover rounded-md shadow-md"
+                              />
+                            </TooltipContent>
+                          </Tooltip>
                         </SelectItem>
                       ))}
                     </SelectContent>

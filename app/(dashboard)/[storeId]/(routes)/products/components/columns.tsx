@@ -1,65 +1,40 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-
 import { CellAction } from './cell-action';
+import { Check } from 'lucide-react';
 
 export type ProductColumn = {
   id: string;
   name: string;
-  price: string;
+  status: 'draft' | 'active' | 'archived';
+  featured: boolean;
   category: string;
-  size: string;
-  color: string;
-  createdAt: string;
-  isFeatured: boolean;
-  isArchived: boolean;
+  created: string;
 };
 
 export const columns: ColumnDef<ProductColumn>[] = [
+  { accessorKey: 'name', header: 'Name' },
   {
-    accessorKey: 'name',
-    header: 'Name',
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.original.status;
+      const capitalized = status.charAt(0).toUpperCase() + status.slice(1);
+      return capitalized;
+    },
   },
   {
-    accessorKey: 'isArchived',
-    header: 'Archived',
-  },
-  {
-    accessorKey: 'isFeatured',
+    accessorKey: 'featured',
     header: 'Featured',
+    cell: ({ row }) => {
+      const isFeatured = row.original.featured;
+      return isFeatured ? (
+        <Check className="h-4 w-4 text-green-500 ml-5" />
+      ) : null;
+    },
   },
-  {
-    accessorKey: 'price',
-    header: 'Price',
-  },
-  {
-    accessorKey: 'category',
-    header: 'Category',
-  },
-  {
-    accessorKey: 'size',
-    header: 'Size',
-  },
-  {
-    accessorKey: 'color',
-    header: 'Color',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-x-2">
-        {row.original.color}
-        <div
-          className="h-6 w-6 rounded-full border"
-          style={{ backgroundColor: row.original.color }}
-        />
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'createdAt',
-    header: 'Date',
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => <CellAction data={row.original} />,
-  },
+  { accessorKey: 'category', header: 'Category' },
+  { accessorKey: 'created', header: 'Created' },
+  { id: 'actions', cell: ({ row }) => <CellAction data={row.original} /> },
 ];

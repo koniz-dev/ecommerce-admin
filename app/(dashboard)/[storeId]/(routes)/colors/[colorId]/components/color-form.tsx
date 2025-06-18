@@ -53,6 +53,7 @@ export const ColorForm: React.FC<ColorFormProps> = ({ initialData }) => {
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       name: '',
+      value: '',
     },
   });
 
@@ -84,8 +85,12 @@ export const ColorForm: React.FC<ColorFormProps> = ({ initialData }) => {
       router.refresh();
       router.push(`/${params.storeId}/colors`);
       toast.success('Color deleted.');
-    } catch {
-      toast.error('Make sure you removed all products using this color first.');
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data?.message || 'Failed to delete color.');
+      } else {
+        toast.error('Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
       setOpen(false);

@@ -3,7 +3,10 @@ import { NextResponse } from 'next/server';
 import prismadb from '@/lib/prismadb';
 import { auth } from '@clerk/nextjs/server';
 
-export async function GET(req: Request, props: { params: Promise<{ sizeId: string }> }) {
+export async function GET(
+  req: Request,
+  props: { params: Promise<{ sizeId: string }> },
+) {
   const params = await props.params;
   try {
     if (!params.sizeId) {
@@ -25,7 +28,7 @@ export async function GET(req: Request, props: { params: Promise<{ sizeId: strin
 
 export async function DELETE(
   req: Request,
-  props: { params: Promise<{ sizeId: string; storeId: string }> }
+  props: { params: Promise<{ sizeId: string; storeId: string }> },
 ) {
   const params = await props.params;
   try {
@@ -65,7 +68,7 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  props: { params: Promise<{ sizeId: string; storeId: string }> }
+  props: { params: Promise<{ sizeId: string; storeId: string }> },
 ) {
   const params = await props.params;
   try {
@@ -73,18 +76,12 @@ export async function PATCH(
 
     const body = await req.json();
 
-    const { name, value } = body;
-
     if (!userId) {
       return new NextResponse('Unauthenticated', { status: 403 });
     }
 
-    if (!name) {
-      return new NextResponse('Name is required', { status: 400 });
-    }
-
-    if (!value) {
-      return new NextResponse('Value is required', { status: 400 });
+    if (!body.label) {
+      return new NextResponse('Label is required', { status: 400 });
     }
 
     if (!params.sizeId) {
@@ -107,8 +104,8 @@ export async function PATCH(
         id: params.sizeId,
       },
       data: {
-        name,
-        value,
+        label: body.label,
+        guideImageUrl: body?.guideImageUrl,
       },
     });
 

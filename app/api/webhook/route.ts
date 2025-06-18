@@ -21,47 +21,55 @@ export async function POST(req: Request) {
     return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
   }
 
-  const session = event.data.object as Stripe.Checkout.Session;
-  const address = session?.customer_details?.address;
-
-  const addressComponents = [
-    address?.line1,
-    address?.line2,
-    address?.city,
-    address?.state,
-    address?.postal_code,
-    address?.country,
-  ];
-
-  const addressString = addressComponents.filter((c) => c !== null).join(', ');
-
   if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const orderId = session.metadata?.orderId as string;
+    const address = session.customer_details?.address;
+
+    // Build a single string for the address
+    const addressString = [
+      address?.line1,
+      address?.line2,
+      address?.city,
+      address?.state,
+      address?.postal_code,
+      address?.country,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
+    // 1) Mark order as paid and set address/phone
     const order = await prismadb.order.update({
-      where: {
-        id: session?.metadata?.orderId,
-      },
+      where: { id: orderId },
       data: {
         isPaid: true,
         address: addressString,
-        phone: session?.customer_details?.phone || '',
+        phone: session.customer_details?.phone || '',
       },
-      include: {
-        orderItems: true,
-      },
+      include: { orderItems: true },
     });
 
-    const productIds = order.orderItems.map((orderItem) => orderItem.productId);
+    // 2) For each ordered variant: decrement stock, then disable if empty
+    for (const item of order.orderItems) {
+      const variantId = item.variantId;
+      const quantity = item.quantity;
 
-    await prismadb.product.updateMany({
-      where: {
-        id: {
-          in: [...productIds],
+      // a) decrement stock
+      const updatedVariant = await prismadb.productVariant.update({
+        where: { id: variantId },
+        data: {
+          stock: { decrement: quantity },
         },
-      },
-      data: {
-        isArchived: true,
-      },
-    });
+      });
+
+      // b) if stock now zero or negative, set status disabled
+      if (updatedVariant.stock <= 0) {
+        await prismadb.productVariant.update({
+          where: { id: variantId },
+          data: { status: 'disabled' },
+        });
+      }
+    }
   }
 
   return new NextResponse(null, { status: 200 });

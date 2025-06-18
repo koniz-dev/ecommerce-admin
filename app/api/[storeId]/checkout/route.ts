@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 
 import { stripe } from '@/lib/stripe';
 import prismadb from '@/lib/prismadb';
-import { Product } from '@prisma/client';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,48 +14,52 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function POST(req: Request, props: { params: Promise<{ storeId: string }> }) {
-  const params = await props.params;
-  const { productIds } = await req.json();
+export async function POST(
+  req: Request,
+  props: { params: Promise<{ storeId: string }> },
+) {
+  const { storeId } = await props.params;
+  const { items } = await req.json();
 
-  if (!productIds || productIds.length === 0) {
-    return new NextResponse('Product ids are required', { status: 400 });
+  if (!Array.isArray(items) || items.length === 0) {
+    return new NextResponse('items are required', {
+      status: 400,
+      headers: corsHeaders,
+    });
   }
 
-  const products = await prismadb.product.findMany({
-    where: {
-      id: {
-        in: productIds,
-      },
+  const variantIds = items.map((i: any) => i.variantId);
+
+  const variants = await prismadb.productVariant.findMany({
+    where: { id: { in: variantIds } },
+    select: {
+      id: true,
+      price: true,
+      product: { select: { name: true } },
     },
   });
 
-  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-
-  products.forEach((product: Product) => {
-    line_items.push({
-      quantity: 1,
-      price_data: {
-        currency: 'USD',
-        product_data: {
-          name: product.name,
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] =
+    variants.map((v) => {
+      const item = items.find((i: any) => i.variantId === v.id)!;
+      return {
+        quantity: item.quantity,
+        price_data: {
+          currency: 'USD',
+          product_data: { name: v.product.name },
+          unit_amount: Math.round(v.price * 100),
         },
-        unit_amount: Number(product.price) * 100,
-      },
+      };
     });
-  });
 
   const order = await prismadb.order.create({
     data: {
-      storeId: params.storeId,
+      storeId,
       isPaid: false,
       orderItems: {
-        create: productIds.map((productId: string) => ({
-          product: {
-            connect: {
-              id: productId,
-            },
-          },
+        create: items.map((i: any) => ({
+          variant: { connect: { id: i.variantId } },
+          quantity: i.quantity,
         })),
       },
     },
@@ -66,20 +69,11 @@ export async function POST(req: Request, props: { params: Promise<{ storeId: str
     line_items,
     mode: 'payment',
     billing_address_collection: 'required',
-    phone_number_collection: {
-      enabled: true,
-    },
+    phone_number_collection: { enabled: true },
     success_url: `${process.env.FRONTEND_STORE_URL}/cart?success=1`,
     cancel_url: `${process.env.FRONTEND_STORE_URL}/cart?canceled=1`,
-    metadata: {
-      orderId: order.id,
-    },
+    metadata: { orderId: order.id },
   });
 
-  return NextResponse.json(
-    { url: session.url },
-    {
-      headers: corsHeaders,
-    },
-  );
+  return NextResponse.json({ url: session.url }, { headers: corsHeaders });
 }

@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { enUS } from 'date-fns/locale';
 
 import prismadb from '@/lib/prismadb';
 import { formatter } from '@/lib/utils';
@@ -15,7 +16,11 @@ const OrdersPage = async (props: { params: Promise<{ storeId: string }> }) => {
     include: {
       orderItems: {
         include: {
-          product: true,
+          variant: {
+            include: {
+              product: true,
+            },
+          },
         },
       },
     },
@@ -24,24 +29,25 @@ const OrdersPage = async (props: { params: Promise<{ storeId: string }> }) => {
     },
   });
 
-  const formattedOrders: OrderColumn[] = orders.map((item) => ({
-    id: item.id,
-    phone: item.phone,
-    address: item.address,
-    products: item.orderItems
-      .map((orderItem) => orderItem.product.name)
+  const formattedOrders: OrderColumn[] = orders.map((order) => ({
+    id: order.id,
+    phone: order.phone,
+    address: order.address,
+    products: order.orderItems
+      .map((oi) => oi.variant?.product.name ?? '—')
       .join(', '),
     totalPrice: formatter.format(
-      item.orderItems.reduce((total, item) => {
-        return total + Number(item.product.price);
+      order.orderItems.reduce((sum, oi) => {
+        const price = oi.variant?.price ?? 0;
+        return sum + price * oi.quantity;
       }, 0),
     ),
-    isPaid: item.isPaid,
-    createdAt: format(item.createdAt, 'MMMM do, yyyy'),
+    isPaid: order.isPaid,
+    created: format(order.createdAt, 'MMMM do, yyyy', { locale: enUS }),
   }));
 
   return (
-    <div className="flex-col">
+    <div className="flex flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         <OrderClient data={formattedOrders} />
       </div>

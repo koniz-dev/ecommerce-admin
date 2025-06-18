@@ -2,20 +2,19 @@ import prismadb from '@/lib/prismadb';
 
 import { ColorForm } from './components/color-form';
 
-const ColorPage = async (props: { params: Promise<{ colorId: string }> }) => {
-  const params = await props.params;
-  let color = null;
+interface PageProps {
+  params: Promise<{ colorId: string }>;
+}
 
-  if (params.colorId !== 'new') {
-    color = await prismadb.color.findUnique({
-      where: {
-        id: params.colorId,
-      },
-    });
-  }
+
+const ColorPage = async (props: PageProps) => {
+  const { colorId } = await props.params;
+  const color = colorId !== 'new'
+    ? await prismadb.color.findUnique({ where: { id: colorId } })
+    : null;
 
   return (
-    <div className="flex-col">
+    <div className="flex flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         <ColorForm initialData={color} />
       </div>

@@ -50,27 +50,35 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   });
 
   const onSubmit = async (data: SettingsFormValues) => {
+    setLoading(true);
     try {
-      setLoading(true);
       await axios.patch(`/api/stores/${params.storeId}`, data);
       router.refresh();
       toast.success('Store updated.');
-    } catch {
-      toast.error('Something went wrong.');
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data?.message || 'Failed to update store.');
+      } else {
+        toast.error('Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const onDelete = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       await axios.delete(`/api/stores/${params.storeId}`);
       router.refresh();
       router.push('/');
       toast.success('Store deleted.');
-    } catch {
-      toast.error('Make sure you removed all products and categories first.');
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data?.message || 'Failed to delete store.');
+      } else {
+        toast.error('Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
       setOpen(false);

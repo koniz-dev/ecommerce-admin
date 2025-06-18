@@ -1,7 +1,7 @@
 'use client';
 
 import axios from 'axios';
-import { Copy, Edit, MoreHorizontal, Trash } from 'lucide-react';
+import { Copy, Edit, MoreHorizontal, Trash, List } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { Fragment, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -66,6 +66,14 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
 
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+          <DropdownMenuItem
+            onClick={() =>
+              router.push(`/${params.storeId}/products/${data.id}/variants`)
+            }
+          >
+            <List className="mr-2 h-4 w-4" /> View All Variants
+          </DropdownMenuItem>
 
           <DropdownMenuItem onClick={() => onCopy(data.id)}>
             <Copy className="mr-2 h-4 w-4" /> Copy Id
