@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { ImagePlus, Trash } from 'lucide-react';
+import { ScrollArea, ScrollBar } from './scroll-area';
 
 interface ImageUploadProps {
   disabled?: boolean;
@@ -36,26 +37,29 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   return (
     <div>
-      <div className="mb-4 flex items-center gap-4">
-        {value.map((url) => (
-          <div
-            key={url}
-            className="relative w-[200px] h-[200px] rounded-md overflow-hidden"
-          >
-            <div className="z-10 absolute top-2 right-2">
-              <Button
-                type="button"
-                onClick={() => onRemove(url)}
-                variant="destructive"
-                size="sm"
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
+      <ScrollArea className="mb-4 w-full">
+        <div className="flex flex-row items-center gap-4">
+          {value.map((url) => (
+            <div
+              key={url}
+              className="relative w-[200px] h-[200px] rounded-md overflow-hidden flex-shrink-0"
+            >
+              <div className="z-10 absolute top-2 right-2">
+                <Button
+                  type="button"
+                  onClick={() => onRemove(url)}
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+              <Image fill className="object-cover" alt="Image" src={url} />
             </div>
-            <Image fill className="object-cover" alt="Image" src={url} />
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+        <ScrollBar orientation="horizontal" className="mt-4" />
+      </ScrollArea>
 
       <CldUploadWidget onSuccess={onSuccess} uploadPreset="btadrt9x">
         {({ open }) => {
