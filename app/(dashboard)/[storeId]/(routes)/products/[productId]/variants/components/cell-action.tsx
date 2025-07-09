@@ -1,7 +1,7 @@
 'use client';
 
 import axios from 'axios';
-import { Copy, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Copy, Edit, MoreHorizontal, Trash2, CopyPlus } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { Fragment, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -54,6 +54,37 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     toast.success('Variant ID copied to clipboard.');
   };
 
+  const onDuplicate = async () => {
+    setLoading(true);
+    try {
+      // Fetch the full variant data (including images)
+      const variantRes = await axios.get(
+        `/api/${storeId}/products/${productId}/variants/${data.id}`
+      );
+      const variant = variantRes.data;
+      // Prepare payload for new variant (remove id, set new SKU if needed)
+      const payload = {
+        images: variant.images?.map((img: { url: string }) => ({ url: img.url })) || [],
+        sku: variant.sku ? `${variant.sku}-copy` : undefined,
+        price: variant.price,
+        stock: variant.stock,
+        sizeId: variant.sizeId,
+        colorId: variant.colorId,
+        status: variant.status,
+      };
+      await axios.post(
+        `/api/${storeId}/products/${productId}/variants`,
+        payload
+      );
+      toast.success('Variant duplicated.');
+      router.refresh();
+    } catch {
+      toast.error('Failed to duplicate variant.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Fragment>
       <AlertModal
@@ -71,6 +102,9 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onClick={onDuplicate} disabled={loading}>
+            <CopyPlus className="mr-2 h-4 w-4" /> Duplicate
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={onCopy}>
             <Copy className="mr-2 h-4 w-4" /> Copy ID
           </DropdownMenuItem>
